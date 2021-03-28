@@ -8,11 +8,11 @@ def backup_func2():
     # and directories
 
     hostname = 'ip'
-    port = 22
-    username = 'root'
+    port = 22 #default port for ssh/sftp is 22, change if needed
+    username = 'user'
     password = 'password'
-    start_directory = 'folder to backup.'
-    backup_dir = 'backup to'
+    start_directory = 'dir to backup'
+    backup_dir = 'dir to save to (on local machine, same that the bot is running on)'
 
     import paramiko
     import os
