@@ -27,11 +27,12 @@ async def start(ctx: commands.Context):
             await ctx.send("Starting second backup...")
             print ("Second backup starting.")
             backup_func2()
+            await ctx.send("Backup complete.")
+            print("Backup Complete")
         except OSError as err:
             print(err)
             await ctx.send("Backup complete.")
             print ("Backup Complete")
-            raise exception 
 @client.event
 async def on_error(ctx, event, *args, **kwargs):
     if isinstance(FileNotFoundError):
