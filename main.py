@@ -57,7 +57,6 @@ async def start(ctx: commands.Context):
 
         # Variables
         time_now = datetime.datetime.now()  # The time now
-        exp = "null"
 
         print("\n[BACKUP BOT]: Backup command called, executing backup tasks.")
         await client.change_presence(
@@ -70,11 +69,30 @@ async def start(ctx: commands.Context):
 
         # Backing up using information from backup1
         print("[BACKUP TASKS]: Starting first backup.")
-        first_backup = False
+
         try:
             first_backup = backup_func(info, backup1["from"], backup1["to"])
         except Exception as e:
-            exp = e.message
+            print("[BACKUP TASK]: An error has occurred during the first backup! Aborting tasks")
+            print(e)
+
+            await client.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.watching,
+                    name='STATUS: ERROR'
+                ),
+                status=discord.Status.dnd
+            )
+
+            embed = discord.Embed(  # Constructing embed
+                title="FIRST BACKUP FAILED",
+                description="```{exception}```".format(exception=e.message),
+                color=discord.colour.Colour.red()
+            ).set_footer(text=str(time_now))
+            await ctx.channel.send(embed)  # Sending it
+
+            return
+
         if first_backup is not True:
             print("[BACKUP TASK]: Unexpected error has occurred during the first backup! Aborting tasks")
             await client.change_presence(
@@ -87,7 +105,8 @@ async def start(ctx: commands.Context):
 
             embed = discord.Embed(  # Constructing embed
                 title="FIRST BACKUP FAILED",
-                description="```{exception}```".format(exception=exp)
+                description="Error: UNKNOWN",
+                color=discord.colour.Colour.red()
             ).set_footer(text=str(time_now))
             await ctx.channel.send(embed)  # Sending it
 
@@ -97,11 +116,29 @@ async def start(ctx: commands.Context):
 
         # Backing up using information from backup2
         print("[BACKUP TASK]: Starting second backup.")
-        second_backup = False
+
         try:
             second_backup = backup_func(info, backup2["from"], backup2["to"])
         except Exception as e:
-            exp = e.message
+            print("[BACKUP TASK]: An error has occurred during the second backup! Aborting tasks")
+            print(e)
+
+            await client.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.watching,
+                    name='STATUS: ERROR'
+                ),
+                status=discord.Status.dnd
+            )
+
+            embed = discord.Embed(  # Constructing embed
+                title="SECOND BACKUP FAILED",
+                description="```{exception}```".format(exception=e.message),
+                color=discord.colour.Colour.red()
+            ).set_footer(text=str(time_now))
+            await ctx.channel.send(embed)  # Sending it
+
+            return
 
         if second_backup is not True:
             print("[BACKUP TASK]: Unexpected error has occurred during the second backup! Aborting tasks")
@@ -115,9 +152,11 @@ async def start(ctx: commands.Context):
 
             embed = discord.Embed(  # Constructing embed
                 title="SECOND BACKUP FAILED",
-                description="```{exception}```".format(exception=exp)
+                description="Error: UNKNOWN",
+                color=discord.colour.Colour.red()
             ).set_footer(text=str(time_now))
             await ctx.channel.send(embed)  # Sending it
+
             return
 
         print("[BACKUP TASK]: Second backup complete.")
@@ -128,7 +167,8 @@ async def start(ctx: commands.Context):
 
         embed = discord.Embed(  # Constructing embed
             title="BACKUP COMPLETE",
-            description="Next backup: {time}".format(time=next_backup)
+            description="Next backup: {time}".format(time=next_backup),
+            color=discord.colour.Colour.green()
         ).set_footer(text=str(time_now))
         await ctx.channel.send(embed)  # Sending it
 
