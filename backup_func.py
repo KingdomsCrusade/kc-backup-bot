@@ -1,24 +1,15 @@
-def backup_func():
+
+# IMPORTS #
+import datetime
+import os
+import paramiko
+
+
+def backup_func(info: dict, from_dir: str, to_dir: str):
 
     """
     Recursively backup all the files in a remote directory
     """
-
-    # information about the source sftp server
-    # and directories
-
-    hostname = 'ip'
-    port = 22 #default port for ssh/sftp is 22, change if needed
-    username = 'user'
-    password = 'password'
-    start_directory = 'dir to backup'
-    backup_dir = 'dir to save to (on local machine, same that the bot is running on)'
-
-    import paramiko
-    import os
-    import datetime
-    import discord
-    from discord.ext import commands
 
     def get_files_directories():
         file_list = sftp.listdir('.')
@@ -38,11 +29,13 @@ def backup_func():
 
         return files, directories
 
-
-    def backup_directory(local_dir, remote_dir):
-        os.chdir(local_dir)
-        sftp.chdir(remote_dir)
-        print(('In directory ' + remote_dir))
+    def backup_directory(local, remote):
+        """
+        Copy the files in "remote" directory to "local" directory
+        """
+        os.chdir(local)
+        sftp.chdir(remote)
+        print(('In directory ' + remote))
 
         files, directories = get_files_directories()
 
@@ -54,39 +47,30 @@ def backup_func():
                 print(('Skipping ' + f + ' due to permissions'))
 
         for d in directories:
-            newremote = remote_dir + d + '/'
-            newlocal = local_dir + '\\' + d
-            os.mkdir(newlocal)
-            backup_directory(newlocal, newremote)
+            new_remote = remote + d + '/'
+            new_local = local + '\\' + d
+            os.mkdir(new_local)
+            backup_directory(new_local, new_remote)
 
+    # MAIN PROGRAM #
+    # Creating directory
+    os.chdir(to_dir)  # Changing working directory to to_dir
+    date_string = str(datetime.date.today())  # Getting today's date
+    os.mkdir(date_string)  # Create directory with today's date
+    os.chdir(date_string)  # Changing directory to it
+    local_dir = os.getcwd()  # Getting directory path of the current working directory
 
-    # Main program
+    # Connecting to SFTP server
+    transport = paramiko.Transport((info["hostname"], info["port"]))  # Creating SSH session
+    transport.connect(username=info["username"], password=info["password"])  # Connecting to user
+    sftp = paramiko.SFTPClient.from_transport(transport)  # Creating SFTP client channel
 
-    # backup directories under here
+    # Copying files from from_dir to to_dir
+    remote_dir = from_dir  # Creating variable named remote_dir to avoid confusion
+    backup_directory(local_dir, remote_dir)  # Copy files
 
-    os.chdir(backup_dir)
+    # Cleaning up
+    sftp.close()  # Closing SFTP client channel
+    transport.close()  # Closing SSH session
 
-    # Create directory with today's date
-
-    datestring = str(datetime.date.today())
-
-    os.mkdir(datestring)
-    os.chdir(datestring)
-    local_dir = os.getcwd()
-
-    # connect to sftp server
-
-    transport = paramiko.Transport((hostname, port))
-    transport.connect(username=username, password=password)
-    sftp = paramiko.SFTPClient.from_transport(transport)
-
-    # back up everthing from top directory
-
-    remote_dir = start_directory
-
-    backup_directory(local_dir, remote_dir)
-
-    # quit sftp connection
-
-    sftp.close()
-    transport.close()
+    return True
