@@ -8,7 +8,7 @@ def backup_func():
     # and directories
 
     hostname = 'ip'
-    port = 2022
+    port = 22
     username = 'username'
     password = 'password'
     start_directory = 'dir in sftp to backup'
