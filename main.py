@@ -3,6 +3,7 @@ from discord.ext import commands
 from backup_func import *
 from backup_func2 import *
 import asyncio
+import datetime
 global online
 online = True
 print ("Starting.")
@@ -62,9 +63,19 @@ async def restart(ctx: commands.Context):
     online = True
     print("Backup started (unpaused)")
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name='Restarting backups.'))
+@client.command(name="lpbackup.start")
+@commands.has_permissions(administrator=True)
+async def lpstart(ctx: commands.Context):
+    await ctx.channel.send("LP Backup Set.")
+    while online == True:
+        datestring = str(datetime.date.today())
+        f"/lp export {datestring}"
+        await ctx.channel.send("/lp export {}".format(datestring))
+        await asyncio.sleep(86400)
 @client.event
 async def on_error(ctx, event, *args, **kwargs):
     if isinstance(FileNotFoundError):
         await ctx.send("Backup complete.")
-client.run("TOKEN")
 
+
+client.run("TOKEN")
